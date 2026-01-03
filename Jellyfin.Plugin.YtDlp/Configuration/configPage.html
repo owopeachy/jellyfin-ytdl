@@ -805,7 +805,6 @@
             // Logs
             function fetchLogs() {
                 var container = document.getElementById('logsContainer');
-                if (!container) return;
                 fetch(ApiClient.getUrl('Plugins/YtDlp/Logs') + '?lines=500', {
                     headers: { 'Authorization': 'MediaBrowser Token="' + ApiClient.accessToken() + '"' }
                 }).then(function(response) {
@@ -822,29 +821,23 @@
                 });
             }
 
-            var btnRefreshLogs = document.querySelector('#btnRefreshLogs');
-            if (btnRefreshLogs) {
-                btnRefreshLogs.addEventListener('click', function() {
-                    fetchLogs();
-                });
-            }
+            document.querySelector('#btnRefreshLogs').addEventListener('click', function() {
+                fetchLogs();
+            });
 
-            var btnClearLogs = document.querySelector('#btnClearLogs');
-            if (btnClearLogs) {
-                btnClearLogs.addEventListener('click', function() {
-                    if (confirm('Clear all logs?')) {
-                        fetch(ApiClient.getUrl('Plugins/YtDlp/Logs/Clear'), {
-                            method: 'POST',
-                            headers: { 'Authorization': 'MediaBrowser Token="' + ApiClient.accessToken() + '"' }
-                        }).then(function() {
-                            fetchLogs();
-                            Dashboard.alert('Logs cleared');
-                        }).catch(function(err) {
-                            Dashboard.alert('Failed to clear logs: ' + (err.message || 'Unknown error'));
-                        });
-                    }
-                });
-            }
+            document.querySelector('#btnClearLogs').addEventListener('click', function() {
+                if (confirm('Clear all logs?')) {
+                    fetch(ApiClient.getUrl('Plugins/YtDlp/Logs/Clear'), {
+                        method: 'POST',
+                        headers: { 'Authorization': 'MediaBrowser Token="' + ApiClient.accessToken() + '"' }
+                    }).then(function() {
+                        fetchLogs();
+                        Dashboard.alert('Logs cleared');
+                    }).catch(function(err) {
+                        Dashboard.alert('Failed to clear logs: ' + (err.message || 'Unknown error'));
+                    });
+                }
+            });
         </script>
     </div>
 </body>
