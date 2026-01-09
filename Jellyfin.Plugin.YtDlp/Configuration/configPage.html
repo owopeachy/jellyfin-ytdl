@@ -685,13 +685,20 @@
             // Sync button
             document.querySelector('#btnSync').addEventListener('click', function() {
                 Dashboard.showLoadingMsg();
-                ApiClient.fetch({
-                    url: ApiClient.getUrl('Plugins/YtDlp/Sync'),
-                    type: 'POST'
-                }).then(function() {
-                    Dashboard.hideLoadingMsg();
-                    Dashboard.alert('Sync started');
-                    setTimeout(updateStatus, 1000);
+                fetch(ApiClient.getUrl('Plugins/YtDlp/Sync'), {
+                    method: 'POST',
+                    headers: { 'Authorization': 'MediaBrowser Token="' + ApiClient.accessToken() + '"' }
+                }).then(function(response) {
+                    if (response.ok) {
+                        Dashboard.hideLoadingMsg();
+                        Dashboard.alert('Sync started');
+                        setTimeout(updateStatus, 1000);
+                        return;
+                    }
+                    return response.json().then(function(data) {
+                        Dashboard.hideLoadingMsg();
+                        Dashboard.alert(data.message || 'Sync failed');
+                    });
                 }).catch(function(err) {
                     Dashboard.hideLoadingMsg();
                     Dashboard.alert('Sync failed: ' + (err.message || 'Unknown error'));
