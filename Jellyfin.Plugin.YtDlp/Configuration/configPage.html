@@ -42,8 +42,6 @@
             .inline-form { display: flex; gap: 0.5em; align-items: flex-end; }
             .inline-form .inputContainer { margin-bottom: 0; }
             .log-content { white-space: pre-wrap; word-break: break-all; color: #ccc; line-height: 1.4; }
-            #tab-logs { position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; width: 100vw; padding: 0 2em; box-sizing: border-box; }
-            #tab-logs .ytdlp-section { max-width: none; width: 100%; }
         </style>
         <div data-role="content">
             <div class="content-primary">
@@ -141,11 +139,11 @@
 
                         <div class="ytdlp-section">
                             <h3>Actions</h3>
-                            <div style="display: flex; gap: 1em;">
-                                <button is="emby-button" type="button" id="btnSync" class="raised button-submit emby-button">
+                            <div style="display: flex; gap: 1em; align-items: flex-start;">
+                                <button is="emby-button" type="button" id="btnSync" class="raised button-submit emby-button" style="min-width: 100px;">
                                     <span>Sync Now</span>
                                 </button>
-                                <button is="emby-button" type="button" id="btnStopSync" class="raised emby-button btn-danger" style="display: none;">
+                                <button is="emby-button" type="button" id="btnStopSync" class="raised emby-button btn-danger" style="display: none; min-width: 100px;">
                                     <span>Stop Sync</span>
                                 </button>
                             </div>
@@ -332,7 +330,7 @@
                                 </button>
                             </div>
 
-                            <div id="logsContainer" style="background: #1a1a1a; border-radius: 4px; padding: 1em; height: calc(100vh - 350px); min-height: 400px; overflow-y: auto; font-family: monospace; font-size: 0.9em; width: calc(100vw - 4em); box-sizing: border-box;">
+                            <div id="logsContainer" style="background: #1a1a1a; border-radius: 4px; padding: 1em; height: calc(100vh - 350px); min-height: 400px; overflow-y: auto; font-family: monospace; font-size: 0.9em;">
                                 <p style="color: #888;">No logs yet. Logs will appear here after sync or download operations.</p>
                             </div>
                         </div>
@@ -543,6 +541,7 @@
             document.querySelector('#YtDlpConfigPage').addEventListener('pageshow', function() {
                 Dashboard.showLoadingMsg();
                 updateStatus();
+                startStatusPolling();
 
                 ApiClient.getPluginConfiguration(YtDlpConfig.pluginUniqueId).then(function(config) {
                     YtDlpConfig.config = config;
@@ -566,6 +565,11 @@
                     renderOverrides();
                     Dashboard.hideLoadingMsg();
                 });
+            });
+
+            document.querySelector('#YtDlpConfigPage').addEventListener('pagehide', function() {
+                stopStatusPolling();
+                stopLogsAutoRefresh();
             });
 
             // Form submit (general settings)
@@ -840,6 +844,21 @@
                     resultEl.style.display = 'block';
                 });
             });
+
+            // Status polling
+            var statusInterval = null;
+
+            function startStatusPolling() {
+                if (statusInterval) return;
+                statusInterval = setInterval(updateStatus, 3000);
+            }
+
+            function stopStatusPolling() {
+                if (statusInterval) {
+                    clearInterval(statusInterval);
+                    statusInterval = null;
+                }
+            }
 
             // Logs
             var logsInterval = null;
