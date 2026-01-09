@@ -55,6 +55,8 @@ public class DownloadManager : IDownloadManager
         }
 
         var archivePath = GetArchivePath();
+        Directory.CreateDirectory(GetStateDirectory());
+
         if (_ytDlp.IsInArchive(archivePath, video.Id))
         {
             _logger.LogDebug("Video {VideoId} already in archive, skipping", video.Id);
