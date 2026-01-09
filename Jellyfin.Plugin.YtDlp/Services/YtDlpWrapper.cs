@@ -72,7 +72,7 @@ public class YtDlpWrapper : IYtDlpWrapper
             "--write-info-json",
             "--write-thumbnail",
             "--output", Path.Combine(outputPath, "%(id)s.%(ext)s"),
-            "--no-progress"
+            "--newline"
         };
 
         if (!string.IsNullOrEmpty(options.ThumbnailFormat))
