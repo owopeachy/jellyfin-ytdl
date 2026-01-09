@@ -80,6 +80,24 @@ public class YtDlpController : ControllerBase
     }
 
     /// <summary>
+    /// Stops the currently running sync.
+    /// </summary>
+    /// <returns>Action result.</returns>
+    [HttpPost("Sync/Stop")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult StopSync()
+    {
+        if (!_syncService.IsSyncing)
+        {
+            return NotFound(new { message = "No sync in progress" });
+        }
+
+        _syncService.StopSync();
+        return Ok(new { message = "Stop requested" });
+    }
+
+    /// <summary>
     /// Updates yt-dlp to the latest version.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>

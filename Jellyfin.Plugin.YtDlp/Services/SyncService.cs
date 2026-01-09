@@ -17,6 +17,7 @@ public class SyncService : IHostedService, IDisposable
     private readonly ILogger<SyncService> _logger;
     private Timer? _timer;
     private bool _disposed;
+    private CancellationTokenSource? _syncCts;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SyncService"/> class.
@@ -82,6 +83,8 @@ public class SyncService : IHostedService, IDisposable
             return;
         }
 
+        _syncCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var token = _syncCts.Token;
         IsSyncing = true;
 
         try
@@ -103,20 +106,54 @@ public class SyncService : IHostedService, IDisposable
 
             foreach (var source in enabledSources)
             {
-                await SyncSourceAsync(source.Url, cancellationToken).ConfigureAwait(false);
+                if (token.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                await SyncSourceAsync(source.Url, token).ConfigureAwait(false);
                 source.LastSyncedAt = DateTime.UtcNow;
             }
 
-            await _downloadManager.ProcessQueueAsync(cancellationToken).ConfigureAwait(false);
-
-            LastSyncTime = DateTime.UtcNow;
-            _logger.LogInformation("Sync completed");
-            PluginLog.Write("[SYNC] Sync completed");
+            if (!token.IsCancellationRequested)
+            {
+                await _downloadManager.ProcessQueueAsync(token).ConfigureAwait(false);
+                LastSyncTime = DateTime.UtcNow;
+                _logger.LogInformation("Sync completed");
+                PluginLog.Write("[SYNC] Sync completed");
+            }
+            else
+            {
+                _logger.LogInformation("Sync was stopped");
+                PluginLog.Write("[SYNC] Sync was stopped by user");
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Sync was cancelled");
+            PluginLog.Write("[SYNC] Sync was stopped by user");
         }
         finally
         {
             IsSyncing = false;
+            _syncCts?.Dispose();
+            _syncCts = null;
         }
+    }
+
+    /// <summary>
+    /// Stops the currently running sync.
+    /// </summary>
+    public void StopSync()
+    {
+        if (!IsSyncing || _syncCts == null)
+        {
+            return;
+        }
+
+        _logger.LogInformation("Stopping sync...");
+        PluginLog.Write("[SYNC] Stopping sync...");
+        _syncCts.Cancel();
     }
 
     /// <summary>
@@ -174,6 +211,7 @@ public class SyncService : IHostedService, IDisposable
         if (disposing)
         {
             _timer?.Dispose();
+            _syncCts?.Dispose();
         }
 
         _disposed = true;
