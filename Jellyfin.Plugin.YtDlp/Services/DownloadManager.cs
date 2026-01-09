@@ -103,9 +103,11 @@ public class DownloadManager : IDownloadManager
 
                 if (!string.IsNullOrEmpty(filePath))
                 {
-                    await _metadataMapper.WriteNfoFileAsync(video, filePath, cancellationToken).ConfigureAwait(false);
-                    _logger.LogInformation("Downloaded {Title} to {Path}", video.Title, filePath);
-                    PluginLog.Write($"[DOWNLOAD] Downloaded: {video.Title}");
+                    var fullMetadata = await ReadInfoJsonAsync(destinationPath, video.Id, cancellationToken).ConfigureAwait(false);
+                    var metadataForNfo = fullMetadata ?? video;
+                    await _metadataMapper.WriteNfoFileAsync(metadataForNfo, filePath, cancellationToken).ConfigureAwait(false);
+                    _logger.LogInformation("Downloaded {Title} to {Path}", metadataForNfo.Title, filePath);
+                    PluginLog.Write($"[DOWNLOAD] Downloaded: {metadataForNfo.Title}");
                     return true;
                 }
 
@@ -226,6 +228,25 @@ public class DownloadManager : IDownloadManager
 
         var updatedJson = JsonSerializer.Serialize(queue, JsonOptions);
         await File.WriteAllTextAsync(queuePath, updatedJson, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task<VideoMetadata?> ReadInfoJsonAsync(string directory, string videoId, CancellationToken cancellationToken)
+    {
+        var infoJsonPath = Path.Combine(directory, $"{videoId}.info.json");
+        if (!File.Exists(infoJsonPath))
+        {
+            return null;
+        }
+
+        try
+        {
+            var json = await File.ReadAllTextAsync(infoJsonPath, cancellationToken).ConfigureAwait(false);
+            return JsonSerializer.Deserialize<VideoMetadata>(json);
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private sealed class DownloadQueue
