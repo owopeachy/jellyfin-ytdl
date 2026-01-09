@@ -58,8 +58,11 @@ public class DownloadManager : IDownloadManager
         if (_ytDlp.IsInArchive(archivePath, video.Id))
         {
             _logger.LogDebug("Video {VideoId} already in archive, skipping", video.Id);
+            PluginLog.Write($"[DOWNLOAD] Skipping {video.Id} (already downloaded)");
             return true;
         }
+
+        PluginLog.Write($"[DOWNLOAD] Starting: {video.Title ?? video.Id}");
 
         var destinationPath = _fileOrganizer.GetDestinationPath(video, config.DownloadPath);
         Directory.CreateDirectory(destinationPath);
@@ -100,6 +103,7 @@ public class DownloadManager : IDownloadManager
                 {
                     await _metadataMapper.WriteNfoFileAsync(video, filePath, cancellationToken).ConfigureAwait(false);
                     _logger.LogInformation("Downloaded {Title} to {Path}", video.Title, filePath);
+                    PluginLog.Write($"[DOWNLOAD] Downloaded: {video.Title}");
                     return true;
                 }
 
@@ -109,18 +113,21 @@ public class DownloadManager : IDownloadManager
             {
                 lastError = ex.Message;
                 _logger.LogWarning(ex, "Download attempt {Attempt} failed for {VideoId}", attempt + 1, video.Id);
+                PluginLog.Write($"[DOWNLOAD] Attempt {attempt + 1} failed for {video.Id}: {ex.Message}");
             }
 
             if (attempt < MaxRetries - 1)
             {
                 var delay = RetryDelaysSeconds[attempt];
                 _logger.LogInformation("Retrying in {Delay} seconds...", delay);
+                PluginLog.Write($"[DOWNLOAD] Retrying {video.Id} in {delay} seconds...");
                 await Task.Delay(TimeSpan.FromSeconds(delay), cancellationToken).ConfigureAwait(false);
             }
         }
 
         await AddToFailedQueueAsync(video, lastError ?? "Unknown error", cancellationToken).ConfigureAwait(false);
         _logger.LogError("Failed to download {VideoId} after {MaxRetries} attempts: {Error}", video.Id, MaxRetries, lastError);
+        PluginLog.Write($"[DOWNLOAD] FAILED: {video.Id} after {MaxRetries} attempts - {lastError}");
         return false;
     }
 

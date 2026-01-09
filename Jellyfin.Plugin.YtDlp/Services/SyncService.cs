@@ -78,6 +78,7 @@ public class SyncService : IHostedService, IDisposable
         if (IsSyncing)
         {
             _logger.LogWarning("Sync already in progress, skipping");
+            PluginLog.Write("[SYNC] Sync already in progress, skipping");
             return;
         }
 
@@ -86,16 +87,19 @@ public class SyncService : IHostedService, IDisposable
         try
         {
             _logger.LogInformation("Starting sync of all sources");
+            PluginLog.Write("[SYNC] Starting sync of all sources");
 
             var config = Plugin.Instance?.Configuration;
             if (config == null)
             {
                 _logger.LogError("Plugin not configured");
+                PluginLog.Write("[SYNC] ERROR: Plugin not configured");
                 return;
             }
 
             var enabledSources = config.Sources.Where(s => s.Enabled).ToList();
             _logger.LogInformation("Found {Count} enabled sources", enabledSources.Count);
+            PluginLog.Write($"[SYNC] Found {enabledSources.Count} enabled sources");
 
             foreach (var source in enabledSources)
             {
@@ -107,6 +111,7 @@ public class SyncService : IHostedService, IDisposable
 
             LastSyncTime = DateTime.UtcNow;
             _logger.LogInformation("Sync completed");
+            PluginLog.Write("[SYNC] Sync completed");
         }
         finally
         {
@@ -123,16 +128,19 @@ public class SyncService : IHostedService, IDisposable
     public async Task SyncSourceAsync(string url, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Syncing source: {Url}", url);
+        PluginLog.Write($"[SYNC] Syncing source: {url}");
 
         var metadata = await _ytDlp.FetchMetadataAsync(url, cancellationToken).ConfigureAwait(false);
 
         if (metadata?.Entries == null || metadata.Entries.Count == 0)
         {
             _logger.LogWarning("No videos found for {Url}", url);
+            PluginLog.Write($"[SYNC] No videos found for {url}");
             return;
         }
 
         _logger.LogInformation("Found {Count} videos", metadata.Entries.Count);
+        PluginLog.Write($"[SYNC] Found {metadata.Entries.Count} videos to process");
 
         foreach (var video in metadata.Entries)
         {
