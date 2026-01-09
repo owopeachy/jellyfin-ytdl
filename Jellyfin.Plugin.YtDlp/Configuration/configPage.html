@@ -320,9 +320,6 @@
                             <p>View recent log entries from sync and download operations.</p>
 
                             <div class="import-export-row">
-                                <button is="emby-button" type="button" id="btnRefreshLogs" class="raised button-submit emby-button">
-                                    <span>Refresh</span>
-                                </button>
                                 <button is="emby-button" type="button" id="btnClearLogs" class="raised emby-button btn-danger">
                                     <span>Clear Logs</span>
                                 </button>
@@ -351,7 +348,9 @@
                     tab.classList.add('active');
                     document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
                     if (tab.dataset.tab === 'logs') {
-                        fetchLogs();
+                        startLogsAutoRefresh();
+                    } else {
+                        stopLogsAutoRefresh();
                     }
                 });
             });
@@ -803,6 +802,8 @@
             });
 
             // Logs
+            var logsInterval = null;
+
             function fetchLogs() {
                 var container = document.getElementById('logsContainer');
                 fetch(ApiClient.getUrl('Plugins/YtDlp/Logs') + '?lines=500', {
@@ -814,16 +815,28 @@
                         container.innerHTML = '<p style="color: #888;">No logs yet. Logs will appear here after sync or download operations.</p>';
                         return;
                     }
+                    var wasAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
                     container.innerHTML = '<div class="log-content">' + escapeHtml(data.content) + '</div>';
-                    container.scrollTop = container.scrollHeight;
+                    if (wasAtBottom) {
+                        container.scrollTop = container.scrollHeight;
+                    }
                 }).catch(function(err) {
                     container.innerHTML = '<p style="color: #ef5350;">Failed to fetch logs: ' + (err.message || 'Unknown error') + '</p>';
                 });
             }
 
-            document.querySelector('#btnRefreshLogs').addEventListener('click', function() {
+            function startLogsAutoRefresh() {
+                if (logsInterval) return;
                 fetchLogs();
-            });
+                logsInterval = setInterval(fetchLogs, 2000);
+            }
+
+            function stopLogsAutoRefresh() {
+                if (logsInterval) {
+                    clearInterval(logsInterval);
+                    logsInterval = null;
+                }
+            }
 
             document.querySelector('#btnClearLogs').addEventListener('click', function() {
                 if (confirm('Clear all logs?')) {
