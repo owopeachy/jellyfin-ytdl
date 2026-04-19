@@ -22,6 +22,7 @@ public class PluginConfiguration : BasePluginConfiguration
         ScheduleIntervalHours = 24;
         MaxConcurrentDownloads = 1;
         FormatString = "bestvideo*+bestaudio/best";
+        FfmpegPath = string.Empty;
         SubtitleLanguages = ["en"];
         IncludeAutoGenSubs = false;
         SubtitleFormat = "srt";
@@ -41,6 +42,11 @@ public class PluginConfiguration : BasePluginConfiguration
     /// Gets or sets the path to yt-dlp binary (auto-managed if empty).
     /// </summary>
     public string YtDlpPath { get; set; }
+
+    /// <summary>
+    /// Gets or sets the path to ffmpeg binary (auto-managed if empty).
+    /// </summary>
+    public string FfmpegPath { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether scheduled sync is enabled.

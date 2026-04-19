@@ -57,6 +57,11 @@ public interface IYtDlpWrapper
 public class DownloadOptions
 {
     /// <summary>
+    /// Gets or sets the ffmpeg binary path or directory.
+    /// </summary>
+    public string? FfmpegPath { get; set; }
+
+    /// <summary>
     /// Gets or sets the subtitle languages.
     /// </summary>
     public string[]? SubtitleLanguages { get; set; }

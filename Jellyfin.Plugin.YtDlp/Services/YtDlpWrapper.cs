@@ -101,6 +101,12 @@ public class YtDlpWrapper : IYtDlpWrapper
             args.AddRange(["--download-archive", options.ArchivePath]);
         }
 
+        var ffmpegLocation = ResolveFfmpegLocation(options.FfmpegPath);
+        if (!string.IsNullOrEmpty(ffmpegLocation))
+        {
+            args.AddRange(["--ffmpeg-location", ffmpegLocation]);
+        }
+
         args.Add(videoUrl);
 
         _logger.LogInformation("Downloading video {VideoId}", videoId);
@@ -155,6 +161,24 @@ public class YtDlpWrapper : IYtDlpWrapper
         }
 
         File.AppendAllText(archivePath, $"youtube {videoId}\n");
+    }
+
+    private string? ResolveFfmpegLocation(string? configuredPath)
+    {
+        if (!string.IsNullOrWhiteSpace(configuredPath))
+        {
+            var trimmedPath = configuredPath.Trim();
+            if (File.Exists(trimmedPath))
+            {
+                return trimmedPath;
+            }
+
+            _logger.LogWarning(
+                "Configured ffmpeg path '{FfmpegPath}' is invalid; skipping --ffmpeg-location",
+                trimmedPath);
+        }
+
+        return null;
     }
 
     private static PlaylistMetadata? ParseMetadataOutput(string output)

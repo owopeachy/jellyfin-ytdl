@@ -61,6 +61,11 @@
                         <input id="YtDlpPath" name="YtDlpPath" type="text" is="emby-input" />
                         <div class="fieldDescription">Leave empty to use the managed binary. Set a path to use your own yt-dlp.</div>
                     </div>
+                    <div class="inputContainer" style="margin-top: 1em;">
+                        <label class="inputLabel inputLabelUnfocused" for="FfmpegPath">ffmpeg Path (optional)</label>
+                        <input id="FfmpegPath" name="FfmpegPath" type="text" is="emby-input" />
+                        <div class="fieldDescription">Path to ffmpeg binary or its directory. Leave empty to use system ffmpeg.</div>
+                    </div>
                     <button is="emby-button" type="button" id="btnUpdateYtDlp" class="raised emby-button" style="margin-top: 0.5em;">
                         <span>Update yt-dlp</span>
                     </button>
@@ -551,6 +556,7 @@
                 ApiClient.getPluginConfiguration(YtDlpConfig.pluginUniqueId).then(function(config) {
                     YtDlpConfig.config = config;
                     document.querySelector('#YtDlpPath').value = config.YtDlpPath || '';
+                    document.querySelector('#FfmpegPath').value = config.FfmpegPath || '';
                     document.querySelector('#DownloadPath').value = config.DownloadPath || '';
                     document.querySelector('#ScheduleEnabled').checked = config.ScheduleEnabled;
                     document.querySelector('#ScheduleIntervalHours').value = config.ScheduleIntervalHours || 24;
@@ -583,6 +589,7 @@
                 Dashboard.showLoadingMsg();
 
                 YtDlpConfig.config.YtDlpPath = document.querySelector('#YtDlpPath').value;
+                YtDlpConfig.config.FfmpegPath = document.querySelector('#FfmpegPath').value;
                 YtDlpConfig.config.DownloadPath = document.querySelector('#DownloadPath').value;
                 YtDlpConfig.config.ScheduleEnabled = document.querySelector('#ScheduleEnabled').checked;
                 YtDlpConfig.config.ScheduleIntervalHours = parseInt(document.querySelector('#ScheduleIntervalHours').value, 10);

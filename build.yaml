@@ -1,6 +1,6 @@
 ---
-name: "yt-dlp"
-guid: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+name: "yt-dlp_peachyfork"
+guid: "a1b2c3d4-e3f6-7890-abcd-ef12345b00ba"
 version: "0.1.0.0"
 targetAbi: "10.9.0.0"
 framework: "net9.0"
@@ -10,7 +10,7 @@ description: >
   organization of YouTube videos. Supports channels, playlists, custom
   organization rules, and full metadata preservation.
 category: "General"
-owner: "rdeusser"
+owner: "owopeachy"
 artifacts:
 - "Jellyfin.Plugin.YtDlp.dll"
 changelog: >

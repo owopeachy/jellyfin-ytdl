@@ -81,6 +81,7 @@ public class DownloadManager : IDownloadManager
 
         var options = new DownloadOptions
         {
+            FfmpegPath = config.FfmpegPath,
             SubtitleLanguages = config.SubtitleLanguages,
             IncludeAutoGenSubs = config.IncludeAutoGenSubs,
             SubtitleFormat = config.SubtitleFormat,

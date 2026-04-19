@@ -27,6 +27,7 @@ Downloads and organizes YouTube content for Jellyfin using yt-dlp.
 |---------|-------------|
 | Download Path | Base directory for downloaded videos |
 | yt-dlp Path | Path to yt-dlp binary (auto-managed if empty) |
+| ffmpeg Path | Path to ffmpeg binary (if empty/invalid, plugin omits `--ffmpeg-location`) |
 | Format String | yt-dlp format selection (default: `bestvideo*+bestaudio/best`) |
 | Max Concurrent Downloads | Parallel download limit |
 | Schedule Enabled | Enable automatic syncs |
